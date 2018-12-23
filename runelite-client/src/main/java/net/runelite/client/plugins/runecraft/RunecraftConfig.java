@@ -199,8 +199,8 @@ public interface RunecraftConfig extends Config
 
 	@ConfigItem(
 		keyName = "showClickBox",
-		name = "Show Rift click box",
-		description = "Configures whether to display the click box of the rift",
+		name = "Show Rift selectPlaylist box",
+		description = "Configures whether to display the selectPlaylist box of the rift",
 		position = 17
 	)
 	default boolean showClickBox()

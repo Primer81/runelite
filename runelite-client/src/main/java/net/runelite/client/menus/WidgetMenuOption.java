@@ -51,10 +51,10 @@ public final class WidgetMenuOption
 	private final WidgetInfo widget;
 
 	/**
-	 * Creates a menu to be added to right click menus. The menu will only be added if match is found within the menu options
+	 * Creates a menu to be added to right selectPlaylist menus. The menu will only be added if match is found within the menu options
 	 *
-	 * @param menuOption Option text of this right click option
-	 * @param menuTarget Target text of this right click option
+	 * @param menuOption Option text of this right selectPlaylist option
+	 * @param menuTarget Target text of this right selectPlaylist option
 	 * @param widget     The widget to attach this option to
 	 */
 	public WidgetMenuOption(String menuOption, String menuTarget, WidgetInfo widget)

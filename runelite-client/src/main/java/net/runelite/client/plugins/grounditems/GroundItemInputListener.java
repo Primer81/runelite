@@ -97,7 +97,7 @@ public class GroundItemInputListener extends MouseAdapter implements KeyListener
 		{
 			if (SwingUtilities.isLeftMouseButton(e))
 			{
-				// Process both click boxes for hidden and highlighted items
+				// Process both selectPlaylist boxes for hidden and highlighted items
 				if (plugin.getHiddenBoxBounds() != null && plugin.getHiddenBoxBounds().getKey().contains(mousePos))
 				{
 					plugin.updateList(plugin.getHiddenBoxBounds().getValue().getName(), true);
@@ -112,7 +112,7 @@ public class GroundItemInputListener extends MouseAdapter implements KeyListener
 					return e;
 				}
 
-				// There is one name click box for left click and one for right click
+				// There is one name selectPlaylist box for left selectPlaylist and one for right selectPlaylist
 				if (plugin.getTextBoxBounds() != null && plugin.getTextBoxBounds().getKey().contains(mousePos))
 				{
 					plugin.updateList(plugin.getTextBoxBounds().getValue().getName(), false);

@@ -91,7 +91,7 @@ public class FeedPlugin extends Plugin
 		navButton = NavigationButton.builder()
 			.tooltip("News Feed")
 			.icon(icon)
-			.priority(8)
+			.priority(9)
 			.panel(feedPanel)
 			.build();
 

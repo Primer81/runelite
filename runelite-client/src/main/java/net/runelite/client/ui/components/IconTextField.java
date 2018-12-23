@@ -119,7 +119,7 @@ public class IconTextField extends JPanel
 		// ActionListener for keyboard use (via Tab -> Space)
 		clearButton.addActionListener(evt -> setText(null));
 
-		// MouseListener for hover and click events
+		// MouseListener for hover and selectPlaylist events
 		clearButton.addMouseListener(new MouseAdapter()
 		{
 			@Override

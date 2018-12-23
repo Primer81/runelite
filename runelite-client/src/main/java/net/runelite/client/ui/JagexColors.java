@@ -50,7 +50,7 @@ public class JagexColors
 	public static final Color CHAT_TYPED_TEXT_TRANSPARENT_BACKGROUND = new Color(144, 144, 255);
 
 	/*
-	 * Colors relating to right-click menus.
+	 * Colors relating to right-selectPlaylist menus.
 	 */
 	public static final Color MENU_TARGET = new Color(255, 144, 64);
 

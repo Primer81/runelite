@@ -297,7 +297,7 @@ public class TrackLoader
 		var51.writeInt(MTHD_MAGIC); // MThd header
 		var51.writeInt(6); // length of header
 		var51.writeShort(tracks > 1 ? 1 : 0); // format
-		var51.writeShort(tracks); // tracks
+		var51.writeShort(tracks); // music
 		var51.writeShort(division); // division
 		var1.setOffset(var13);
 		int channel = 0;
