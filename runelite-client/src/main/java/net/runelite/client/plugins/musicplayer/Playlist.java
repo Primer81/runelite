@@ -1,28 +1,41 @@
 package net.runelite.client.plugins.musicplayer;
 
+import lombok.Getter;
+
 import java.util.*;
 
 class Playlist
 {
 	final int MAX_BACK = 100;
 
-	protected String title;
-	Set<String> songs;
+	@Getter
+	RawPlaylist rawPlaylist;
+
+	String title;
+	private Set<String> songs;
+
 	private Deque<String> songQueue;
 	private Deque<String> songsPlayed;
 
-	Playlist(String title, Set<String> songs)
+	Playlist(RawPlaylist rawPlaylist)
 	{
 		super();
-		this.title = title;
-		this.songs = songs;
+		this.rawPlaylist = rawPlaylist;
+		this.title = rawPlaylist.title;
+		this.songs = rawPlaylist.songs;
 		this.songQueue = new ArrayDeque<>();
 		this.songsPlayed = new ArrayDeque<>();
 		rebuildQueue();
 	}
 
+	Playlist(String title, Set<String> songs)
+	{
+		this(new RawPlaylist(title, songs));
+	}
+
 	void updatePlaylist(Set<String> songs)
 	{
+		this.rawPlaylist.songs = songs;
 		this.songs = songs;
 		rebuildQueue();
 	}
@@ -30,7 +43,7 @@ class Playlist
 	private void rebuildQueue()
 	{
 		this.songQueue = new ArrayDeque<>();
-		for (String key : MusicPlayerPanel.musicIndicesInAlphaOrder)
+		for (String key : MusicPlayerPlugin.musicIndicesInAlphaOrder)
 		{
 			if (songs.contains(key))
 			{
@@ -129,4 +142,6 @@ class Playlist
 		}
 		return false;
 	}
+
+
 }

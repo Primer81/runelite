@@ -1,7 +1,6 @@
 package net.runelite.client.plugins.musicplayer;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
+import com.google.inject.Singleton;
 import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.PluginPanel;
 import net.runelite.client.util.ImageUtil;
@@ -13,13 +12,14 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.*;
 import java.util.List;
 
+@Singleton
 class MusicPlayerPanel extends PluginPanel
 {
+	MusicPlayerPlugin plugin;
+
 	ImageIcon iconBack;
 	ImageIcon iconBackHover;
 
@@ -42,10 +42,9 @@ class MusicPlayerPanel extends PluginPanel
 	private final Color COLOR_SUBTITLE = Color.WHITE;
 
 	MusicPlayer musicPlayer;
-	static Map<String, String> musicNameIndex;
-	static List<String> musicIndicesInAlphaOrder;
-	static Map<String, Integer> musicRowIndex;
-	static Map<Integer, String> rowMusicIndex;
+
+	static Map<String, Integer> musicRowIndex = new HashMap<>();
+	static Map<Integer, String> rowMusicIndex = new HashMap<>();
 	CustomTable tableSongs;
 
 	Playlist playlistAllSongs;
@@ -74,7 +73,7 @@ class MusicPlayerPanel extends PluginPanel
 	private JLabel buttonShuffle;
 	private JLabel buttonLoop;
 
-	MusicPlayerPanel()
+	MusicPlayerPanel(MusicPlayerPlugin plugin)
 	{
 		super();
 
@@ -90,7 +89,7 @@ class MusicPlayerPanel extends PluginPanel
 					}
 					else if (loop)
 					{
-						this.musicPlayer.load(indexToFilePath(songPlaying));
+						this.changeSong(songPlaying);
 						this.musicPlayer.play();
 					}
 					else
@@ -101,8 +100,8 @@ class MusicPlayerPanel extends PluginPanel
 				}
 			}
 		);
-		loadIndex();
-		playlists = new ArrayList<>();
+		this.plugin = plugin;
+		this.playlists = new ArrayList<>(plugin.getPlaylists());
 		playlistItems = new ArrayList<>();
 		loop = false;
 		shuffle = true;
@@ -400,7 +399,10 @@ class MusicPlayerPanel extends PluginPanel
 				if (!tableSongs.isInEditMode())
 				{
 					String songId = rowMusicIndex.get(rowSelected);
-					selectedPlaylist.setCurrentSongId(songId);
+					if (selectedPlaylist.hasCurrentSongId() && selectedPlaylist.getCurrentSongId().equals(songId))
+					{
+						selectedPlaylist.setCurrentSongId(songId);
+					}
 					changeSong(songId);
 				}
 				else
@@ -437,21 +439,18 @@ class MusicPlayerPanel extends PluginPanel
 		this.add(playlistPanel);
 
 		// Add default playlists
-		playlistAllSongs = new Playlist("All Songs", musicNameIndex.keySet());
+		playlistAllSongs = new Playlist("All Songs", plugin.musicNameIndex.keySet());
 		PlaylistItem itemAllSongs = new PlaylistItem(this, playlistAllSongs);
 		itemAllSongs.remove(itemAllSongs.button);
 
-		this.playlists.add(playlistAllSongs);
+		this.playlists.add(0, playlistAllSongs);
 
 		addNewPlaylistItem(itemAllSongs);
 
 		itemAllSongs.selectPlaylist();
 
 		// Load user playlists
-		this.playlists.add(new Playlist("My Playlist", new HashSet<>(Arrays.asList("35", "55")))); // dummy playlist
-		this.playlists.add(new Playlist("My Other Playlist", new HashSet<>(Arrays.asList("35", "55")))); // dummy playlist
-
-		for (Playlist playlist : this.playlists.subList(1, this.playlists.size()))
+		for (Playlist playlist : this.plugin.getPlaylists()/*this.playlists.subList(1, this.playlists.size()*/)
 		{
 			addNewPlaylistItem(new PlaylistItem(this, playlist));
 		}
@@ -484,7 +483,7 @@ class MusicPlayerPanel extends PluginPanel
 					return;
 				}
 
-				removeSelectedPlaylist();
+				deleteSelectedPlaylist();
 			}
 		});
 		this.add(itemDeletePlaylist);
@@ -516,6 +515,8 @@ class MusicPlayerPanel extends PluginPanel
 		Playlist playlist = new Playlist(playlistTitle, new HashSet<>());
 		PlaylistItem pItem = new PlaylistItem(this, playlist);
 
+		this.plugin.getPlaylists().add(playlist);
+		this.plugin.updateConfig();
 		this.playlists.add(playlist);
 		addNewPlaylistItem(pItem);
 
@@ -523,7 +524,7 @@ class MusicPlayerPanel extends PluginPanel
 		pItem.enterEditMode();
 	}
 
-	private void removeSelectedPlaylist()
+	private void deleteSelectedPlaylist()
 	{
 		if (!selectedPlaylist.equals(playlistAllSongs))  // Check not equal to default playlist
 		{
@@ -533,6 +534,8 @@ class MusicPlayerPanel extends PluginPanel
 			int result = JOptionPane.showConfirmDialog(this, msg, title, JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
 			if (result == JOptionPane.YES_OPTION)
 			{
+				this.plugin.getPlaylists().remove(selectedPlaylist);
+				this.plugin.updateConfig();
 				playlists.remove(selectedPlaylist);
 				playlistPanel.remove(selectedPlaylistItem);
 				playlistPanel.remove(selectedPlaylistItem.spacer);
@@ -544,31 +547,7 @@ class MusicPlayerPanel extends PluginPanel
 
 	private String indexToFilePath(String index)
 	{
-		return "music/" + index + " - " + musicNameIndex.get(index) + ".mid";
-	}
-
-	private static <T> List<T> asSortedList(Collection<T> c, Comparator<T> comp)
-	{
-		List<T> list = new ArrayList<>(c);
-		list.sort(comp);
-		return list;
-	}
-
-	private void loadIndex()
-	{
-		final Gson gson = new Gson();
-		final TypeToken<Map<String, String>> typeToken = new TypeToken<Map<String, String>>()
-		{
-		};
-		InputStream isMusicIndex = getClass().getResourceAsStream("music_index.json");
-		musicNameIndex = gson.fromJson(new InputStreamReader(isMusicIndex), typeToken.getType());
-		Collection<Map.Entry<String, String>> entryCollection = musicNameIndex.entrySet();
-		List<Map.Entry<String, String>> musicSortByName = asSortedList(entryCollection, Comparator.comparing(Map.Entry::getValue));
-		musicIndicesInAlphaOrder = new ArrayList<>();
-		for (Map.Entry<String, String> entry : musicSortByName)
-		{
-			musicIndicesInAlphaOrder.add(entry.getKey());
-		}
+		return "music/" + index + " - " + plugin.musicNameIndex.get(index) + ".mid";
 	}
 
 	void reloadSong()
@@ -598,7 +577,7 @@ class MusicPlayerPanel extends PluginPanel
 		songPlaying = songId;
 		int rowInTable = musicRowIndex.get(songId);
 		SwingUtilities.invokeLater(() -> tableSongs.setRowSelectionInterval(rowInTable, rowInTable));
-		subtitlePlaying.setText(String.format(PLAY_FORMAT, PLAY_PRE, musicNameIndex.get(songPlaying)));
+		subtitlePlaying.setText(String.format(PLAY_FORMAT, PLAY_PRE, plugin.musicNameIndex.get(songPlaying)));
 		this.musicPlayer.load(indexToFilePath(songPlaying));
 	}
 

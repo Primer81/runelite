@@ -36,9 +36,8 @@ class MusicPlayer
 			transmitter.setReceiver(receiver);
 
 			// Load old school runescape sound font
-			InputStream inputStreamSoundFont = getClass().getResourceAsStream("Old School RuneScape v2.0.sf2");
-			Soundbank soundbank = MidiSystem.getSoundbank(inputStreamSoundFont);
-			this.synthesizer.loadAllInstruments(soundbank);
+			InputStream inputStreamSoundFont = getClass().getResourceAsStream("Old School RuneScape v3.0.sf2");
+			synthesizer.loadAllInstruments(MidiSystem.getSoundbank(inputStreamSoundFont));
 		}
 		catch (MidiUnavailableException | InvalidMidiDataException | IOException e)
 		{
@@ -46,7 +45,7 @@ class MusicPlayer
 		}
 	}
 
-	boolean skip()
+	void skip()
 	{
 		boolean wasRunning = this.sequencer.isRunning();
 		if (this.sequencer.getTickLength() != 0)
@@ -58,9 +57,7 @@ class MusicPlayer
 
 			if (wasRunning)
 				this.sequencer.start();
-			return false;
 		}
-		return true;
 	}
 
 	void pause()

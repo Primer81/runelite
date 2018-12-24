@@ -35,6 +35,8 @@ class PlaylistItem extends MusicPlayerItem
 		this.playlist = playlist;
 		this.parent = parent;
 
+		this.setToolTipText(playlist.title);
+
 		BufferedImage imageConfig = ImageUtil.getResourceStreamFromClass(PlaylistItem.class, "config.png");
 		iconConfig = new ImageIcon(imageConfig);
 		iconConfigHover = new ImageIcon(ImageUtil.grayscaleImage(imageConfig));
@@ -44,7 +46,6 @@ class PlaylistItem extends MusicPlayerItem
 		iconDoneHover = new ImageIcon(ImageUtil.grayscaleImage(imageDone));
 
 		this.button.setIcon(iconConfig);
-		this.button.setToolTipText("Edit Playlist");
 
 		this.button.addMouseListener(new MouseAdapter()
 		{
@@ -172,12 +173,12 @@ class PlaylistItem extends MusicPlayerItem
 			MusicPlayerPanel.musicRowIndex = new HashMap<>();
 			MusicPlayerPanel.rowMusicIndex = new HashMap<>();
 			int rowCount = 0;
-			for (String key : MusicPlayerPanel.musicIndicesInAlphaOrder)
+			for (String key : parent.plugin.musicIndicesInAlphaOrder)
 			{
 				if (playlist.contains(key))
 				{
 					Vector<String> row = new Vector<>();
-					row.add(MusicPlayerPanel.musicNameIndex.get(key));
+					row.add(parent.plugin.musicNameIndex.get(key));
 					data.add(row);
 					MusicPlayerPanel.musicRowIndex.put(key, rowCount);
 					MusicPlayerPanel.rowMusicIndex.put(rowCount, key);
@@ -210,7 +211,6 @@ class PlaylistItem extends MusicPlayerItem
 	void enterEditMode()
 	{
 		button.setIcon(iconDoneHover);
-		button.setToolTipText("Confirm Changes");
 
 		for (PlaylistItem pItem : parent.playlistItems)
 		{
@@ -232,12 +232,12 @@ class PlaylistItem extends MusicPlayerItem
 		MusicPlayerPanel.musicRowIndex = new HashMap<>();
 		MusicPlayerPanel.rowMusicIndex = new HashMap<>();
 		int rowCount = 0;
-		for (String key : MusicPlayerPanel.musicIndicesInAlphaOrder)
+		for (String key : parent.plugin.musicIndicesInAlphaOrder)
 		{
 			if (playlist.contains(key))
 			{
 				Vector<Object> row = new Vector<>();
-				row.add(MusicPlayerPanel.musicNameIndex.get(key));
+				row.add(parent.plugin.musicNameIndex.get(key));
 				row.add(true);
 				data.add(row);
 				MusicPlayerPanel.musicRowIndex.put(key, rowCount);
@@ -245,12 +245,12 @@ class PlaylistItem extends MusicPlayerItem
 				rowCount++;
 			}
 		}
-		for (String key : MusicPlayerPanel.musicIndicesInAlphaOrder)
+		for (String key : parent.plugin.musicIndicesInAlphaOrder)
 		{
 			if (!playlist.contains(key))
 			{
 				Vector<Object> row = new Vector<>();
-				row.add(MusicPlayerPanel.musicNameIndex.get(key));
+				row.add(parent.plugin.musicNameIndex.get(key));
 				row.add(false);
 				data.add(row);
 				MusicPlayerPanel.musicRowIndex.put(key, rowCount);
@@ -287,7 +287,6 @@ class PlaylistItem extends MusicPlayerItem
 
 		// Revert to normal mode
 		button.setIcon(iconConfigHover);
-		button.setToolTipText("Edit Playlist");
 
 		for (PlaylistItem pItem : parent.playlistItems)
 		{
@@ -307,12 +306,12 @@ class PlaylistItem extends MusicPlayerItem
 		MusicPlayerPanel.musicRowIndex = new HashMap<>();
 		MusicPlayerPanel.rowMusicIndex = new HashMap<>();
 		int rowCount = 0;
-		for (String key : MusicPlayerPanel.musicIndicesInAlphaOrder)
+		for (String key : parent.plugin.musicIndicesInAlphaOrder)
 		{
 			if (playlist.contains(key))
 			{
 				Vector<String> row = new Vector<>();
-				row.add(MusicPlayerPanel.musicNameIndex.get(key));
+				row.add(parent.plugin.musicNameIndex.get(key));
 				data.add(row);
 				MusicPlayerPanel.musicRowIndex.put(key, rowCount);
 				MusicPlayerPanel.rowMusicIndex.put(rowCount, key);
@@ -322,5 +321,6 @@ class PlaylistItem extends MusicPlayerItem
 
 		parent.tableSongs.setModel(new CustomTableModel(data, columnNames));
 		parent.tableSongs.setInEditMode(false);
+		parent.plugin.updateConfig();
 	}
 }

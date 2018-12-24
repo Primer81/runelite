@@ -19,7 +19,10 @@ class MusicPlayerItem extends JPanel
 	public JLabel button;
 	public JLabel label;
 
-	public Component spacer;
+	private ImageIcon icon;
+	private ImageIcon iconHover;
+
+	Component spacer;
 
 	final Border defaultBorder = new EmptyBorder(1, 5, 1, 1);
 
@@ -27,17 +30,34 @@ class MusicPlayerItem extends JPanel
 	{
 		super();
 
-		SpringLayout layout = new SpringLayout();
-		//this.setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
-		this.setLayout(layout);
+		this.setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
 		this.setBorder(defaultBorder);
 		this.setPreferredSize(new Dimension(PluginPanel.PANEL_WIDTH, ITEM_HEIGHT));
 		this.setBackground(ColorScheme.DARKER_GRAY_COLOR);
 		this.spacer = Box.createVerticalStrut(5);
 
-		label = new JLabel(description);
+		label = new JLabel(description)
+		{
+			@Override
+			public Dimension getMaximumSize()
+			{
+				Dimension size = super.getMaximumSize();
+				size.width = PluginPanel.PANEL_WIDTH - ITEM_HEIGHT - 10;
+				return size;
+			}
+			@Override
+			public Dimension getPreferredSize()
+			{
+				return getMaximumSize();
+			}
+			@Override
+			public Dimension getMinimumSize()
+			{
+				return getMaximumSize();
+			}
+		};
 		label.setForeground(Color.WHITE);
-		//this.add(Box.createHorizontalStrut(5));
+		this.add(Box.createHorizontalStrut(5));
 		this.add(label);
 
 		// Add button
@@ -45,47 +65,45 @@ class MusicPlayerItem extends JPanel
 		button = new JLabel();
 		if (image != null)
 		{
-			ImageIcon icon = new ImageIcon(image);
-			ImageIcon iconHover = new ImageIcon(ImageUtil.grayscaleImage(image));
+			icon = new ImageIcon(image);
+			iconHover = new ImageIcon(ImageUtil.grayscaleImage(image));
 			button.setIcon(icon);
 			button.addMouseListener(new MouseAdapter()
 			{
 				@Override
 				public void mouseEntered(MouseEvent e)
 				{
-					button.setIcon(iconHover);
+					onMouseEnter();
 				}
 
 				@Override
 				public void mouseExited(MouseEvent e)
 				{
-					button.setIcon(icon);
+					onMouseExit();
 				}
 			});
 		}
-		this.button.setPreferredSize(new Dimension(ITEM_HEIGHT, ITEM_HEIGHT));
-		this.button.setMinimumSize(new Dimension(ITEM_HEIGHT, ITEM_HEIGHT));
-		//this.add(Box.createHorizontalGlue());
+		this.add(Box.createHorizontalGlue());
 		this.add(button);
+		this.add(Box.createHorizontalStrut(10));
 
 		// Set alignment
 		this.setAlignmentX(Component.LEFT_ALIGNMENT);
-
-		// Set constraints
-		layout.putConstraint(SpringLayout.WEST, label, 5, SpringLayout.WEST, this);
-		layout.putConstraint(SpringLayout.NORTH, label, 5, SpringLayout.NORTH, this);
-		layout.putConstraint(SpringLayout.SOUTH, label, 5, SpringLayout.SOUTH, this);
-
-		layout.putConstraint(SpringLayout.EAST, button, 5, SpringLayout.EAST, this);
-		layout.putConstraint(SpringLayout.NORTH, button, 5, SpringLayout.NORTH, this);
-		layout.putConstraint(SpringLayout.SOUTH, button, 5, SpringLayout.SOUTH, this);
-
-		layout.putConstraint(SpringLayout.EAST, label, 5, SpringLayout.WEST, button);
 	}
 
-	private void receiveMouseEvent(MouseEvent e)
+	private void onMouseEnter()
 	{
-		e.setSource(this);
-		this.dispatchEvent(e);
+		if (iconHover != null && this.isEnabled() && button.isEnabled())
+		{
+			button.setIcon(iconHover);
+		}
+	}
+
+	private void onMouseExit()
+	{
+		if (icon != null && this.isEnabled() && button.isEnabled())
+		{
+			button.setIcon(icon);
+		}
 	}
 }
