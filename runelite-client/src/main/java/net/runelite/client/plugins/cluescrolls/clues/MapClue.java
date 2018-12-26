@@ -140,7 +140,7 @@ public class MapClue extends ClueScroll implements ObjectClueScroll
 			}
 
 			panelComponent.getChildren().add(LineComponent.builder()
-				.left("Travel to the destination and selectPlaylist the " + objectName + ".")
+				.left("Travel to the destination and click the " + objectName + ".")
 				.build());
 		}
 		else

@@ -62,7 +62,7 @@ public class NavigationButton
 	private boolean selected;
 
 	/**
-	 * On selectPlaylist action of the button.
+	 * On click action of the button.
 	 */
 	private Runnable onClick;
 

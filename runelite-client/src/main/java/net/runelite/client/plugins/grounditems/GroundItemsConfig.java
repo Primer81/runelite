@@ -108,7 +108,7 @@ public interface GroundItemsConfig extends Config
 	@ConfigItem(
 		keyName = "recolorMenuHiddenItems",
 		name = "Recolor Menu Hidden Items",
-		description = "Configures whether or not hidden items in right selectPlaylist menu will be recolored",
+		description = "Configures whether or not hidden items in right click menu will be recolored",
 		position = 5
 	)
 	default boolean recolorMenuHiddenItems()
@@ -163,7 +163,7 @@ public interface GroundItemsConfig extends Config
 	@ConfigItem(
 		keyName = "menuHighlightMode",
 		name = "Menu Highlight Mode",
-		description = "Configures what to highlight in right-selectPlaylist menu",
+		description = "Configures what to highlight in right-click menu",
 		position = 10
 	)
 	default MenuHighlightMode menuHighlightMode()
@@ -218,7 +218,7 @@ public interface GroundItemsConfig extends Config
 	@ConfigItem(
 		keyName = "hiddenColor",
 		name = "Hidden items color",
-		description = "Configures the color for hidden items in right-selectPlaylist menu and when holding ALT",
+		description = "Configures the color for hidden items in right-click menu and when holding ALT",
 		position = 15
 	)
 	default Color hiddenColor()

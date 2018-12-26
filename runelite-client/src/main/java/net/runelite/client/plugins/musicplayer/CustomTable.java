@@ -1,21 +1,23 @@
 package net.runelite.client.plugins.musicplayer;
 
-import javax.swing.*;
-import javax.swing.table.TableModel;
+import lombok.Getter;
+
+import javax.swing.JTable;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 
 class CustomTable extends JTable
 {
+	@Getter
 	private int hoveredRow;
-	private int hoveredColumn;
-	private boolean inEditMode;
 
-	CustomTable(TableModel model)
+	@Getter
+	private int hoveredColumn;
+
+	CustomTable()
 	{
-		super(model);
-		inEditMode = false;
+		super();
 		this.addMouseMotionListener(new MouseMotionAdapter()
 		{
 			@Override
@@ -41,24 +43,15 @@ class CustomTable extends JTable
 		});
 	}
 
-	int getHoveredRow()
+	int getRowFromSongId(String songId)
 	{
-		return hoveredRow;
+		CustomTableModel model = (CustomTableModel)getModel();
+		return model.getMusicRowIndex().get(songId);
 	}
 
-	int getHoveredColumn()
+	String getSongIdFromRow(int row)
 	{
-		return hoveredColumn;
-	}
-
-	boolean isInEditMode()
-	{
-		return inEditMode;
-	}
-
-	void setInEditMode(boolean inEditMode)
-	{
-		this.inEditMode = inEditMode;
-		this.repaint();
+		CustomTableModel model = (CustomTableModel)getModel();
+		return model.getRowMusicIndex().get(row);
 	}
 }

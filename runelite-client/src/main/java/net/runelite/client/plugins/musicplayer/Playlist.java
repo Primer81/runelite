@@ -6,49 +6,64 @@ import java.util.*;
 
 class Playlist
 {
-	final int MAX_BACK = 100;
-
 	@Getter
-	RawPlaylist rawPlaylist;
+	PlaylistData playlistData;
 
 	String title;
+
+	private final int MAX_BACK = 100;
+
 	private Set<String> songs;
 
 	private Deque<String> songQueue;
 	private Deque<String> songsPlayed;
 
-	Playlist(RawPlaylist rawPlaylist)
+	Playlist(PlaylistData playlistData)
 	{
 		super();
-		this.rawPlaylist = rawPlaylist;
-		this.title = rawPlaylist.title;
-		this.songs = rawPlaylist.songs;
+		this.playlistData = playlistData;
+		this.title = playlistData.title;
+		this.songs = playlistData.songs;
 		this.songQueue = new ArrayDeque<>();
 		this.songsPlayed = new ArrayDeque<>();
-		rebuildQueue();
 	}
 
 	Playlist(String title, Set<String> songs)
 	{
-		this(new RawPlaylist(title, songs));
+		this(new PlaylistData(title, songs));
 	}
 
 	void updatePlaylist(Set<String> songs)
 	{
-		this.rawPlaylist.songs = songs;
+		this.playlistData.songs = songs;
 		this.songs = songs;
-		rebuildQueue();
 	}
 
-	private void rebuildQueue()
+	void rebuildQueue(boolean shuffle)
 	{
-		this.songQueue = new ArrayDeque<>();
-		for (String key : MusicPlayerPlugin.musicIndicesInAlphaOrder)
+		if (!shuffle)
 		{
-			if (songs.contains(key))
+			songQueue = new ArrayDeque<>();
+			for (String key : MusicPlayerPlugin.songsOrderedAlpha)
 			{
-				this.songQueue.addFirst(key);
+				if (songs.contains(key))
+				{
+					songQueue.addFirst(key);
+				}
 			}
+		}
+		else
+		{
+			Random rand = new Random();
+			List<String> songList = new ArrayList<>();
+			for (String songId : MusicPlayerPlugin.songsOrderedAlpha)
+			{
+				if (songs.contains(songId))
+				{
+					songList.add(rand.nextInt(songList.size() + 1), songId);
+				}
+			}
+			songQueue = new ArrayDeque<>(songList);
 		}
 	}
 
@@ -57,10 +72,6 @@ class Playlist
 		if (!songs.contains(songId))
 		{
 			return;
-		}
-
-		while (!skipNextSongId().equals(songId))
-		{
 		}
 
 		songsPlayed.addLast(songId);
@@ -72,15 +83,22 @@ class Playlist
 
 	private String skipNextSongId()
 	{
-		if (this.songs.isEmpty())
+		if (this.songs.isEmpty() || this.songQueue.isEmpty())
 		{
 			return "";
 		}
-		if (this.songQueue.isEmpty())
-		{
-			rebuildQueue();
-		}
 		return this.songQueue.removeLast();
+	}
+
+	String getPrevSongId()
+	{
+		if (hasPrevSongId())
+		{
+			String song = songsPlayed.removeLast();
+			songQueue.addLast(song);
+			return songsPlayed.getLast();
+		}
+		return "";
 	}
 
 	String getCurrentSongId()
@@ -89,7 +107,7 @@ class Playlist
 		{
 			return songsPlayed.getLast();
 		}
-		return null;
+		return "";
 	}
 
 	String getNextSongId()
@@ -107,17 +125,6 @@ class Playlist
 		return songId;
 	}
 
-	String getPrevSongId()
-	{
-		if (hasPrevSongId())
-		{
-			String song = songsPlayed.removeLast();
-			songQueue.addLast(song);
-			return songsPlayed.getLast();
-		}
-		return null;
-	}
-
 	boolean hasPrevSongId()
 	{
 		return songsPlayed.size() > 1;
@@ -128,9 +135,19 @@ class Playlist
 		return songsPlayed.size() > 0;
 	}
 
+	boolean hasNextSongId()
+	{
+		return !songQueue.isEmpty();
+	}
+
 	boolean contains(String songId)
 	{
 		return this.songs.contains(songId);
+	}
+
+	boolean isEmpty()
+	{
+		return songs.isEmpty();
 	}
 
 	@Override
@@ -142,6 +159,4 @@ class Playlist
 		}
 		return false;
 	}
-
-
 }

@@ -8,11 +8,9 @@ class MusicPlayer
 {
 	private Synthesizer synthesizer;
 	Sequencer sequencer;
-	private MetaEventListener meListener;
 
-	MusicPlayer(MetaEventListener meListener)
+	MusicPlayer()
 	{
-		this.meListener = meListener;
 		init();
 	}
 
@@ -27,7 +25,6 @@ class MusicPlayer
 			// Open sequencer
 			this.sequencer = MidiSystem.getSequencer(false);
 			this.sequencer.open();
-			this.sequencer.addMetaEventListener(this.meListener);
 			this.sequencer.setLoopCount(0);
 
 			// Initialize sequencer and synthesizer
@@ -43,6 +40,11 @@ class MusicPlayer
 		{
 			e.printStackTrace();
 		}
+	}
+
+	void restart()
+	{
+		sequencer.setTickPosition(0);
 	}
 
 	void skip()
@@ -84,10 +86,14 @@ class MusicPlayer
 
 		try
 		{
-			// Load midi song file
 			InputStream inputStreamSong = getClass().getResourceAsStream(songPath);
 			Sequence sequence = MidiSystem.getSequence(inputStreamSong);
-			this.sequencer.setSequence(sequence);
+			boolean wasRunning = sequencer.isRunning();
+			if (wasRunning)
+				pause();
+			sequencer.setSequence(sequence);
+			if (wasRunning)
+				play();
 		}
 		catch (InvalidMidiDataException | IOException e)
 		{

@@ -37,7 +37,7 @@ public enum OverlayLayer
 	UNDER_WIDGETS,
 
 	/**
-	 * Render under the right-selectPlaylist menu
+	 * Render under the right-click menu
 	 */
 	ABOVE_WIDGETS,
 

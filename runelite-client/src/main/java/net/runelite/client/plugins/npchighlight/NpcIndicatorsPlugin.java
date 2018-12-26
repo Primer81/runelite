@@ -241,7 +241,7 @@ public class NpcIndicatorsPlugin extends Plugin
 	@Subscribe
 	public void onFocusChanged(FocusChanged focusChanged)
 	{
-		// If you somehow manage to right selectPlaylist while holding shift, then selectPlaylist off screen
+		// If you somehow manage to right click while holding shift, then click off screen
 		if (!focusChanged.isFocused() && hotKeyPressed)
 		{
 			updateNpcMenuOptions(false);

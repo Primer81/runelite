@@ -67,7 +67,7 @@ public class MenuEntrySwapperPlugin extends Plugin
 	private static final String CONFIGURE = "Configure";
 	private static final String SAVE = "Save";
 	private static final String RESET = "Reset";
-	private static final String MENU_TARGET = "Shift-selectPlaylist";
+	private static final String MENU_TARGET = "Shift-click";
 
 	private static final String CONFIG_GROUP = "shiftclick";
 	private static final String ITEM_KEY_PREFIX = "item_";
@@ -515,7 +515,7 @@ public class MenuEntrySwapperPlugin extends Plugin
 				swap("use", option, target, true);
 			}
 		}
-		// Put all item-related swapping after shift-selectPlaylist
+		// Put all item-related swapping after shift-click
 		else if (config.swapTeleportItem() && option.equals("wear"))
 		{
 			swap("rub", option, target, true);

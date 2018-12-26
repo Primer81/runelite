@@ -67,7 +67,7 @@ class UICombinedActionSlot extends JPanel
 		uiLabelTitle = new JShadowedLabel("No Action Selected");
 		uiLabelTitle.setForeground(Color.WHITE);
 
-		uiLabelActions = new JShadowedLabel("Shift-selectPlaylist to select multiple");
+		uiLabelActions = new JShadowedLabel("Shift-click to select multiple");
 		uiLabelActions.setFont(FontManager.getRunescapeSmallFont());
 		uiLabelActions.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
 

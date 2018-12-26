@@ -28,7 +28,7 @@ public class CustomTableStringCellRenderer extends JLabel implements TableCellRe
 
 		setFont(table.getFont());
 
-		if (isSelected && !cTable.isInEditMode())
+		if (isSelected)
 		{
 			super.setForeground(ColorScheme.PROGRESS_COMPLETE_COLOR);
 			super.setBackground(ColorScheme.DARKER_GRAY_HOVER_COLOR);

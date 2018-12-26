@@ -34,7 +34,7 @@ public interface MenuEntrySwapperConfig extends Config
 	@ConfigItem(
 		position = -2,
 		keyName = "shiftClickCustomization",
-		name = "Customizable shift-selectPlaylist",
+		name = "Customizable shift-click",
 		description = "Allows customization of shift-clicks on items"
 	)
 	default boolean shiftClickCustomization()
@@ -95,7 +95,7 @@ public interface MenuEntrySwapperConfig extends Config
 	@ConfigItem(
 		keyName = "swapChase",
 		name = "Chase",
-		description = "Allows to left selectPlaylist your cat to chase"
+		description = "Allows to left click your cat to chase"
 	)
 	default boolean swapChase()
 	{

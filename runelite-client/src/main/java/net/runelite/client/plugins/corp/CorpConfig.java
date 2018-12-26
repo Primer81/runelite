@@ -33,7 +33,7 @@ public interface CorpConfig extends Config
 {
 	@ConfigItem(
 		keyName = "leftClickCore",
-		name = "Left selectPlaylist walk on core",
+		name = "Left click walk on core",
 		description = "Prioritizes Walk here over Attack on the Dark energy core",
 		position = 1
 	)

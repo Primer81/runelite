@@ -156,7 +156,7 @@ class SkillCalculator extends JPanel
 		else
 		{
 			combinedActionSlot.setTitle("No action selected");
-			combinedActionSlot.setText("Shift-selectPlaylist to select multiple");
+			combinedActionSlot.setText("Shift-click to select multiple");
 			return;
 		}
 

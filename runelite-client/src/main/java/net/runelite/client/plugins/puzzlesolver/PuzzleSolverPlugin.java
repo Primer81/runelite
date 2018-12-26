@@ -61,7 +61,7 @@ import net.runelite.client.util.Text;
 
 @PluginDescriptor(
 	name = "Puzzle Solver",
-	description = "Show you where to selectPlaylist to solve puzzle boxes",
+	description = "Show you where to click to solve puzzle boxes",
 	tags = {"clues", "scrolls", "overlay"}
 )
 @Slf4j

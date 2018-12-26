@@ -50,7 +50,7 @@ public class GrandExchangeInputListener extends MouseAdapter implements KeyListe
 	@Override
 	public MouseEvent mouseClicked(MouseEvent e)
 	{
-		// Check if left selectPlaylist + alt
+		// Check if left click + alt
 		if (e.getButton() == MouseEvent.BUTTON1 && e.isAltDown())
 		{
 			final MenuEntry[] menuEntries = client.getMenuEntries();
