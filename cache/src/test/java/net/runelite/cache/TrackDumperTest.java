@@ -57,7 +57,7 @@ public class TrackDumperTest
 	public void test() throws IOException
 	{
 		File dumpDir1 = folder.newFolder(),
-			dumpDir2 = folder.newFolder();
+				dumpDir2 = folder.newFolder();
 		int idx1 = 0, idx2 = 0;
 
 		djb2.load();
@@ -83,7 +83,13 @@ public class TrackDumperTest
 			}
 		}
 
-		logger.info("Dumped {} sound tracks ({} idx1, {} idx2) to {} and {}", idx1 + idx2, idx1, idx2, dumpDir1, dumpDir2);
+		logger.info("Dumped {} sound music ({} idx1, {} idx2) to {} and {}", idx1 + idx2, idx1, idx2, dumpDir1, dumpDir2);
+
+		try {
+			Thread.sleep(10000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 	}
 
 	private void dumpTrackArchive(File dumpDir, Storage storage, Archive archive) throws IOException

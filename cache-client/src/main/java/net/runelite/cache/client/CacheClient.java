@@ -236,7 +236,7 @@ public class CacheClient implements AutoCloseable
 			else
 			{
 				// despite the index being up to date, not everything
-				// can be downloaded, eg. for tracks.
+				// can be downloaded, eg. for music.
 				logger.info("Index {} is up to date", index.getId());
 			}
 

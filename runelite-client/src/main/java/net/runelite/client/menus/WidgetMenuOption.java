@@ -25,10 +25,10 @@
 package net.runelite.client.menus;
 
 import net.runelite.api.widgets.WidgetInfo;
-
-import java.awt.Color;
 import net.runelite.client.ui.JagexColors;
 import net.runelite.client.util.ColorUtil;
+
+import java.awt.Color;
 
 public final class WidgetMenuOption
 {
