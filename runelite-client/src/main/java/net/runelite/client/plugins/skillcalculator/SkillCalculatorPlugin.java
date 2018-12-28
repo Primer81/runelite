@@ -70,7 +70,7 @@ public class SkillCalculatorPlugin extends Plugin
 		uiNavigationButton = NavigationButton.builder()
 			.tooltip("Skill Calculator")
 			.icon(icon)
-			.priority(7)
+			.priority(6)
 			.panel(uiPanel)
 			.build();
 
