@@ -57,7 +57,7 @@ public class TrackDumperTest
 	public void test() throws IOException
 	{
 		File dumpDir1 = folder.newFolder(),
-				dumpDir2 = folder.newFolder();
+			dumpDir2 = folder.newFolder();
 		int idx1 = 0, idx2 = 0;
 
 		djb2.load();
