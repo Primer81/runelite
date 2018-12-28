@@ -70,7 +70,7 @@ public class NotesPlugin extends Plugin
 		navButton = NavigationButton.builder()
 			.tooltip("Notes")
 			.icon(icon)
-			.priority(8)
+			.priority(7)
 			.panel(panel)
 			.build();
 
