@@ -312,7 +312,7 @@ public class HerbiboarPlugin extends Plugin
 		}
 	}
 
-	// Store relevant GroundObjects (tracks on trails, and some tunnels)
+	// Store relevant GroundObjects (music on trails, and some tunnels)
 	private void onGroundObject(Tile tile, TileObject oldObject, TileObject newObject)
 	{
 		if (oldObject != null)
