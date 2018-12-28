@@ -39,10 +39,10 @@ class MusicPlayerPluginPanel extends PluginPanel
 	private final String PLAY_PRE = "";
 
 	// Package classes
-	private MusicPlayerPlugin plugin;
+	private final MusicPlayerPlugin plugin;
 	private final MusicPlayer musicPlayer = new MusicPlayer();
-	private Playlist selectedPlaylist;
 	private final List<Playlist> playlists = new ArrayList<>();
+	private Playlist selectedPlaylist;
 
 	// Components
 	private final MusicPlayerPanel addPlaylistPanel = new MusicPlayerPanel(ImageManager.getImage(Images.PLUS_IMG), "Create New Playlist");
