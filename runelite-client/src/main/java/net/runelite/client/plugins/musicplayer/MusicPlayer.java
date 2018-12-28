@@ -152,7 +152,7 @@ class MusicPlayer
 		sequencer.start();
 	}
 
-	void load(String midiFilePath)
+	void load(String songId)
 	{
 		boolean isNull = synthesizer == null || sequencer == null;
 
@@ -165,6 +165,7 @@ class MusicPlayer
 			}
 		}
 
+		String midiFilePath =  "music/" + songId + " - " + MusicPlayerPlugin.musicNameIndex.get(songId) + ".mid";
 		InputStream inputStreamSong = getClass().getResourceAsStream(midiFilePath);
 		Sequence sequence;
 		try
