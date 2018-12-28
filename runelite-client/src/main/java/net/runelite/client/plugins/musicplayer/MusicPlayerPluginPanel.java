@@ -596,7 +596,7 @@ class MusicPlayerPluginPanel extends PluginPanel
 		int rowInTable = tableSongs.getRowFromSongId(songId);
 		SwingUtilities.invokeLater(() -> tableSongs.setRowSelectionInterval(rowInTable, rowInTable));
 		subtitlePlaying.setText(String.format(PLAY_FORMAT, PLAY_PRE, MusicPlayerPlugin.musicNameIndex.get(songId)));
-		musicPlayer.load(indexToFilePath(songId));
+		musicPlayer.load(songId);
 		sliderProgress.setValue(0);
 		updateProgressLabel();
 	}
@@ -608,11 +608,6 @@ class MusicPlayerPluginPanel extends PluginPanel
 		long msMaximum = musicPlayer.getMicrosecondLength() / 1000;
 		long msProgress = (long) (msMaximum * percentProgress);
 		labelProgress.setText(String.format("%s / %s", df.format(msProgress), df.format(msMaximum)));
-	}
-
-	private String indexToFilePath(String index)
-	{
-		return "music/" + index + " - " + MusicPlayerPlugin.musicNameIndex.get(index) + ".mid";
 	}
 
 	void setPlaylistPanelSelected(PlaylistPanel panel)
