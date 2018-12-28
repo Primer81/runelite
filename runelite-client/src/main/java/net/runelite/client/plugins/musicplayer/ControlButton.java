@@ -11,12 +11,12 @@ import java.awt.GridBagLayout;
 
 class ControlButton extends JPanel
 {
-	private final Dimension SIZE = new Dimension(MusicPlayerPanel.ITEM_HEIGHT, MusicPlayerPanel.ITEM_HEIGHT);
+	private final Dimension SIZE = new Dimension(43, 37);
 
 	private final Border RAISED_BORDER = BorderFactory.createRaisedBevelBorder();
 	private final Border LOWERED_BORDER = BorderFactory.createLoweredBevelBorder();
 
-	private JLabel label;
+	private final JLabel label;
 
 	ControlButton(ImageIcon icon)
 	{

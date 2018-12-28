@@ -49,7 +49,7 @@ public class MusicPlayerPlugin extends Plugin
 		MusicPlayerPluginPanel pluginPanel = new MusicPlayerPluginPanel(this);
 		uiNavigationButton = NavigationButton.builder()
 			.tooltip(PLUGIN_NAME)
-			.icon(ImageManager.getImage(ImageManager.Images.MUSIC_IMG))
+			.icon(ImageManager.getImage(Images.MUSIC_IMG))
 			.priority(6)
 			.panel(pluginPanel)
 			.build();

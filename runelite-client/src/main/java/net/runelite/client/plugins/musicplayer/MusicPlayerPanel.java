@@ -20,7 +20,7 @@ import java.awt.image.BufferedImage;
 
 class MusicPlayerPanel extends JPanel
 {
-	static final int ITEM_HEIGHT = 40;
+	private static final int ITEM_HEIGHT = 40;
 
 	@Getter
 	protected JLabel button;
@@ -39,11 +39,11 @@ class MusicPlayerPanel extends JPanel
 	{
 		super();
 
-		this.setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
-		this.setBorder(defaultBorder);
-		this.setPreferredSize(new Dimension(PluginPanel.PANEL_WIDTH, ITEM_HEIGHT));
-		this.setBackground(ColorScheme.DARKER_GRAY_COLOR);
-		this.spacer = Box.createVerticalStrut(5);
+		setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
+		setBorder(defaultBorder);
+		setPreferredSize(new Dimension(PluginPanel.PANEL_WIDTH, ITEM_HEIGHT));
+		setBackground(ColorScheme.DARKER_GRAY_COLOR);
+		spacer = Box.createVerticalStrut(5);
 
 		label = new JLabel(description)
 		{
@@ -66,8 +66,8 @@ class MusicPlayerPanel extends JPanel
 			}
 		};
 		label.setForeground(Color.WHITE);
-		this.add(Box.createHorizontalStrut(5));
-		this.add(label);
+		add(Box.createHorizontalStrut(5));
+		add(label);
 
 		button = new JLabel();
 		if (image != null)
@@ -90,11 +90,11 @@ class MusicPlayerPanel extends JPanel
 				}
 			});
 		}
-		this.add(Box.createHorizontalGlue());
-		this.add(button);
-		this.add(Box.createHorizontalStrut(10));
+		add(Box.createHorizontalGlue());
+		add(button);
+		add(Box.createHorizontalStrut(10));
 
-		this.setAlignmentX(Component.LEFT_ALIGNMENT);
+		setAlignmentX(Component.LEFT_ALIGNMENT);
 	}
 
 	private void onMouseEnter()

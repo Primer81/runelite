@@ -9,7 +9,7 @@ import java.util.Set;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class PlaylistData
+class PlaylistData
 {
 	String title;
 	Set<String> songs;

@@ -1,8 +1,12 @@
 package net.runelite.client.plugins.musicplayer;
 
 import lombok.Getter;
-
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.List;
+import java.util.Random;
+import java.util.Set;
 
 class Playlist
 {
@@ -17,6 +21,8 @@ class Playlist
 
 	private Deque<String> songQueue;
 	private Deque<String> songsPlayed;
+
+	private List<String> shuffledList = new ArrayList<>();
 
 	Playlist(PlaylistData playlistData)
 	{
@@ -39,6 +45,26 @@ class Playlist
 		this.songs = songs;
 	}
 
+	void shufflePlaylist()
+	{
+		Random rand = new Random();
+		shuffledList = new ArrayList<>();
+		for (String songId : MusicPlayerPlugin.songsOrderedAlpha)
+		{
+			if (songs.contains(songId))
+			{
+				shuffledList.add(rand.nextInt(shuffledList.size() + 1), songId);
+			}
+		}
+		if (!shuffledList.isEmpty() && !songsPlayed.isEmpty() && shuffledList.get(0).equals(songsPlayed.peekLast()))
+		{
+			String first = shuffledList.get(0);
+			String last = shuffledList.get(shuffledList.size() - 1);
+			shuffledList.set(shuffledList.size() - 1, first);
+			shuffledList.set(0, last);
+		}
+	}
+
 	void rebuildQueue(boolean shuffle)
 	{
 		if (!shuffle)
@@ -54,16 +80,11 @@ class Playlist
 		}
 		else
 		{
-			Random rand = new Random();
-			List<String> songList = new ArrayList<>();
-			for (String songId : MusicPlayerPlugin.songsOrderedAlpha)
+			if (shuffledList.isEmpty())
 			{
-				if (songs.contains(songId))
-				{
-					songList.add(rand.nextInt(songList.size() + 1), songId);
-				}
+				shufflePlaylist();
 			}
-			songQueue = new ArrayDeque<>(songList);
+			songQueue = new ArrayDeque<>(shuffledList);
 		}
 	}
 

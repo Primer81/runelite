@@ -1,51 +1,64 @@
 package net.runelite.client.plugins.musicplayer;
 
-import com.google.inject.Singleton;
-import net.runelite.client.ui.ColorScheme;
-import net.runelite.client.ui.PluginPanel;
-
-import javax.swing.*;
-import javax.swing.border.MatteBorder;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.InputMap;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSlider;
+import javax.swing.KeyStroke;
+import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.MatteBorder;
+import net.runelite.client.ui.ColorScheme;
+import net.runelite.client.ui.PluginPanel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-@Singleton
 class MusicPlayerPluginPanel extends PluginPanel
 {
+	private static final Logger logger = LoggerFactory.getLogger(MusicPlayerPluginPanel.class);
+
 	// Constants
 	private final Color COLOR_TITLE = Color.WHITE;
 	private final Color COLOR_SUBTITLE = Color.WHITE;
-
 	private final String PLAY_FORMAT = "<html>%s<font color='rgb(55, 240, 70)'>%s</font></html>";
 	private final String PLAY_PRE = "";
 
 	// Package classes
 	private MusicPlayerPlugin plugin;
-	private MusicPlayer musicPlayer;
-
+	private final MusicPlayer musicPlayer = new MusicPlayer();
 	private Playlist selectedPlaylist;
-	private List<Playlist> playlists;
+	private final List<Playlist> playlists = new ArrayList<>();
 
-	// Components and related
-	private JPanel playlistPanel;
-	private List<PlaylistPanel> playlistPanels;
-	private MusicPlayerPanel addPlaylistPanel;
-	private MusicPlayerPanel deletePlaylistPanel;
-	private CustomTable tableSongs;
-	private JLabel subtitlePlaying;
-	private PlaylistPanel selectedPlaylistPanel;
-	private ControlButton buttonBack;
-	private ControlButton buttonPausePlay;
-	private ControlButton buttonNext;
-	private ControlButton buttonShuffle;
-	private ControlButton buttonLoop;
+	// Components
+	private final MusicPlayerPanel addPlaylistPanel = new MusicPlayerPanel(ImageManager.getImage(Images.PLUS_IMG), "Create New Playlist");
+	private final MusicPlayerPanel deletePlaylistPanel = new MusicPlayerPanel(ImageManager.getImage(Images.MINUS_IMG), "Delete Playlist");
+	private final CustomTable tableSongs = new CustomTable();
+	private final JLabel subtitlePlaying = new JLabel(String.format(PLAY_FORMAT, PLAY_PRE, ""));
+	private final ControlButton buttonBack = new ControlButton(ImageManager.getIcon(Images.BACK_IMG));
+	private final ControlButton buttonPausePlay = new ControlButton(ImageManager.getIcon(Images.PLAY_IMG));
+	private final ControlButton buttonNext = new ControlButton(ImageManager.getIcon(Images.NEXT_IMG));
+	private final ControlButton buttonShuffle = new ControlButton(ImageManager.getIcon(Images.SHUFFLE_IMG));
+	private final ControlButton buttonLoop = new ControlButton(ImageManager.getIcon(Images.LOOP_IMG));
+	private final JSlider sliderProgress = new JSlider();
+	private final JLabel labelProgress = new JLabel("00:00 / 00:00");
+	private final JPanel panelPlaylists = new JPanel();
+	private final List<PlaylistPanel> playlistPanels = new ArrayList<>();
+	private PlaylistPanel playlistPanelSelected;
 
 	// Atomic fields
 	private boolean shuffle;
@@ -55,25 +68,23 @@ class MusicPlayerPluginPanel extends PluginPanel
 	{
 		super();
 		this.plugin = plugin;
-		musicPlayer = new MusicPlayer();
-		musicPlayer.sequencer.addMetaEventListener(meta ->
+		musicPlayer.addMetaEventListener(meta ->
 			{
 				if (meta.getType() == 0x2F)  // End of track
 				{
+					logger.debug("end of track, loading next song");
 					loadNextSong();
+					musicPlayer.play();
 				}
 			}
 		);
 		shuffle = false;
 		loop = false;
-		playlists = new ArrayList<>(plugin.getSavedPlaylists());
-		playlistPanels = new ArrayList<>();
+		playlists.addAll(plugin.getSavedPlaylists());
 
-		// Set layout
 		BoxLayout boxLayout = new BoxLayout(this, BoxLayout.PAGE_AXIS);
 		setLayout(boxLayout);
 
-		// Add all components to the panel
 		initTitleSection();
 		add(Box.createVerticalStrut(10));
 		initPlayingSection();
@@ -98,7 +109,6 @@ class MusicPlayerPluginPanel extends PluginPanel
 
 	private void initPlayingSection()
 	{
-		subtitlePlaying = new JLabel(String.format(PLAY_FORMAT, PLAY_PRE, ""));
 		subtitlePlaying.setForeground(COLOR_SUBTITLE);
 		subtitlePlaying.setAlignmentX(Component.LEFT_ALIGNMENT);
 		this.add(subtitlePlaying);
@@ -107,26 +117,17 @@ class MusicPlayerPluginPanel extends PluginPanel
 
 	private void initControlsSection()
 	{
-		// Add controls subtitle
 		JLabel subtitleControls = new JLabel("Controls:");
 		subtitleControls.setForeground(COLOR_SUBTITLE);
 		subtitleControls.setAlignmentX(Component.LEFT_ALIGNMENT);
 		this.add(subtitleControls);
 		this.add(Box.createVerticalStrut(5));
 
-		// Add controls
-		JPanel panelControls = new JPanel();
-		panelControls.setPreferredSize(new Dimension(PluginPanel.PANEL_WIDTH, MusicPlayerPanel.ITEM_HEIGHT));
-		panelControls.setBackground(ColorScheme.DARKER_GRAY_COLOR);
-		BoxLayout layoutControls = new BoxLayout(panelControls, BoxLayout.LINE_AXIS);
-		panelControls.setLayout(layoutControls);
-		panelControls.setAlignmentX(Component.LEFT_ALIGNMENT);
-
-		buttonBack = new ControlButton(ImageManager.getIcon(ImageManager.Images.BACK_IMG));
-		buttonPausePlay = new ControlButton(ImageManager.getIcon(ImageManager.Images.PLAY_IMG));
-		buttonNext = new ControlButton(ImageManager.getIcon(ImageManager.Images.NEXT_IMG));
-		buttonShuffle = new ControlButton(ImageManager.getIcon(ImageManager.Images.SHUFFLE_IMG));
-		buttonLoop = new ControlButton(ImageManager.getIcon(ImageManager.Images.LOOP_IMG));
+		JPanel panelButtons = new JPanel();
+		panelButtons.setOpaque(false);
+		BoxLayout layoutControls = new BoxLayout(panelButtons, BoxLayout.LINE_AXIS);
+		panelButtons.setLayout(layoutControls);
+		panelButtons.setBorder(new EmptyBorder(3, 3, 0, 3));
 
 		buttonBack.setToolTipText("Back");
 		buttonPausePlay.setToolTipText("Pause/Play");
@@ -164,13 +165,13 @@ class MusicPlayerPluginPanel extends PluginPanel
 			@Override
 			public void mouseEntered(MouseEvent e)
 			{
-				buttonBack.setIcon(ImageManager.getIcon(ImageManager.Images.BACK_IMG, true));
+				buttonBack.setIcon(ImageManager.getIcon(Images.BACK_IMG, true));
 			}
 
 			@Override
 			public void mouseExited(MouseEvent e)
 			{
-				buttonBack.setIcon(ImageManager.getIcon(ImageManager.Images.BACK_IMG));
+				buttonBack.setIcon(ImageManager.getIcon(Images.BACK_IMG));
 				buttonBack.setPressed(false);
 			}
 		});
@@ -179,15 +180,15 @@ class MusicPlayerPluginPanel extends PluginPanel
 			@Override
 			public void mouseClicked(MouseEvent e)
 			{
-				if (musicPlayer.sequencer.isRunning())
+				if (musicPlayer.isPlaying())
 				{
 					musicPlayer.pause();
-					buttonPausePlay.setIcon(ImageManager.getIcon(ImageManager.Images.PLAY_IMG));
+					buttonPausePlay.setIcon(ImageManager.getIcon(Images.PLAY_IMG));
 				}
 				else
 				{
 					musicPlayer.play();
-					buttonPausePlay.setIcon(ImageManager.getIcon(ImageManager.Images.PAUSE_IMG));
+					buttonPausePlay.setIcon(ImageManager.getIcon(Images.PAUSE_IMG));
 				}
 			}
 
@@ -206,26 +207,26 @@ class MusicPlayerPluginPanel extends PluginPanel
 			@Override
 			public void mouseEntered(MouseEvent e)
 			{
-				if (musicPlayer.sequencer.isRunning())
+				if (musicPlayer.isPlaying())
 				{
-					buttonPausePlay.setIcon(ImageManager.getIcon(ImageManager.Images.PAUSE_IMG, true));
+					buttonPausePlay.setIcon(ImageManager.getIcon(Images.PAUSE_IMG, true));
 				}
 				else
 				{
-					buttonPausePlay.setIcon(ImageManager.getIcon(ImageManager.Images.PLAY_IMG, true));
+					buttonPausePlay.setIcon(ImageManager.getIcon(Images.PLAY_IMG, true));
 				}
 			}
 
 			@Override
 			public void mouseExited(MouseEvent e)
 			{
-				if (musicPlayer.sequencer.isRunning())
+				if (musicPlayer.isPlaying())
 				{
-					buttonPausePlay.setIcon(ImageManager.getIcon(ImageManager.Images.PAUSE_IMG));
+					buttonPausePlay.setIcon(ImageManager.getIcon(Images.PAUSE_IMG));
 				}
 				else
 				{
-					buttonPausePlay.setIcon(ImageManager.getIcon(ImageManager.Images.PLAY_IMG));
+					buttonPausePlay.setIcon(ImageManager.getIcon(Images.PLAY_IMG));
 				}
 				buttonPausePlay.setPressed(false);
 			}
@@ -253,13 +254,13 @@ class MusicPlayerPluginPanel extends PluginPanel
 			@Override
 			public void mouseEntered(MouseEvent e)
 			{
-				buttonNext.setIcon(ImageManager.getIcon(ImageManager.Images.NEXT_IMG, true));
+				buttonNext.setIcon(ImageManager.getIcon(Images.NEXT_IMG, true));
 			}
 
 			@Override
 			public void mouseExited(MouseEvent e)
 			{
-				buttonNext.setIcon(ImageManager.getIcon(ImageManager.Images.NEXT_IMG));
+				buttonNext.setIcon(ImageManager.getIcon(Images.NEXT_IMG));
 				buttonNext.setPressed(false);
 			}
 		});
@@ -269,6 +270,10 @@ class MusicPlayerPluginPanel extends PluginPanel
 			public void mouseClicked(MouseEvent e)
 			{
 				shuffle = !shuffle;
+				if (shuffle)
+				{
+					selectedPlaylist.shufflePlaylist();
+				}
 				selectedPlaylist.rebuildQueue(shuffle);
 				buttonShuffle.setPressed(shuffle);
 			}
@@ -276,13 +281,13 @@ class MusicPlayerPluginPanel extends PluginPanel
 			@Override
 			public void mouseEntered(MouseEvent e)
 			{
-				buttonShuffle.setIcon(ImageManager.getIcon(ImageManager.Images.SHUFFLE_IMG, true));
+				buttonShuffle.setIcon(ImageManager.getIcon(Images.SHUFFLE_IMG, true));
 			}
 
 			@Override
 			public void mouseExited(MouseEvent e)
 			{
-				buttonShuffle.setIcon(ImageManager.getIcon(ImageManager.Images.SHUFFLE_IMG));
+				buttonShuffle.setIcon(ImageManager.getIcon(Images.SHUFFLE_IMG));
 			}
 		});
 		buttonLoop.addMouseListener(new MouseAdapter()
@@ -297,53 +302,113 @@ class MusicPlayerPluginPanel extends PluginPanel
 			@Override
 			public void mouseEntered(MouseEvent e)
 			{
-				buttonLoop.setIcon(ImageManager.getIcon(ImageManager.Images.LOOP_IMG, true));
+				buttonLoop.setIcon(ImageManager.getIcon(Images.LOOP_IMG, true));
 			}
 
 			@Override
 			public void mouseExited(MouseEvent e)
 			{
-				buttonLoop.setIcon(ImageManager.getIcon(ImageManager.Images.LOOP_IMG));
+				buttonLoop.setIcon(ImageManager.getIcon(Images.LOOP_IMG));
 			}
 		});
 
-		panelControls.add(buttonBack);
-		panelControls.add(buttonPausePlay);
-		panelControls.add(buttonNext);
-		panelControls.add(buttonShuffle);
-		panelControls.add(buttonLoop);
+		panelButtons.add(buttonBack);
+		panelButtons.add(buttonPausePlay);
+		panelButtons.add(buttonNext);
+		panelButtons.add(Box.createHorizontalGlue());
+		panelButtons.add(buttonShuffle);
+		panelButtons.add(Box.createHorizontalGlue());
+		panelButtons.add(buttonLoop);
 
-		this.add(panelControls);
+		sliderProgress.setAlignmentX(BoxLayout.X_AXIS);
+		sliderProgress.setBackground(ColorScheme.BRAND_ORANGE);
+		sliderProgress.setValue(0);
+		sliderProgress.setFocusable(false);
+
+		labelProgress.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
+		labelProgress.setBorder(new EmptyBorder(0, 8, 0, 0));
+
+		sliderProgress.addMouseMotionListener(new MouseAdapter()
+		{
+			@Override
+			public void mouseDragged(MouseEvent e)
+			{
+				updateProgressLabel();
+			}
+		});
+		sliderProgress.addMouseListener(new MouseAdapter()
+		{
+			boolean wasRunning;
+
+			@Override
+			public void mousePressed(MouseEvent e)
+			{
+				wasRunning =  musicPlayer.isPlaying();
+				if (wasRunning)
+					musicPlayer.pause();
+			}
+
+			@Override
+			public void mouseReleased(MouseEvent e)
+			{
+				double percentProgress = (double) sliderProgress.getValue() / (double) sliderProgress.getMaximum();
+				musicPlayer.setPercentProgress(percentProgress);
+				if (wasRunning)
+					musicPlayer.play();
+			}
+		});
+		musicPlayer.addTickListener(e ->
+		{
+			double percentProgress = musicPlayer.getPercentProgress();
+			sliderProgress.setValue((int) (sliderProgress.getMaximum() * percentProgress));
+			SimpleDateFormat df = new SimpleDateFormat("mm:ss");
+			long msProgress = musicPlayer.getMicrosecondPosition() / 1000;
+			long msMaximum = musicPlayer.getMicrosecondLength() / 1000;
+			labelProgress.setText(String.format("%s / %s", df.format(msProgress), df.format(msMaximum)));
+		});
+
+		JPanel panelControls = new JPanel();
+		panelControls.setAlignmentX(BoxLayout.X_AXIS);
+		panelControls.setLayout(new BoxLayout(panelControls, BoxLayout.PAGE_AXIS));
+		panelControls.setBackground(ColorScheme.DARKER_GRAY_COLOR);
+		sliderProgress.setAlignmentX(BoxLayout.X_AXIS);
+		labelProgress.setAlignmentX(BoxLayout.X_AXIS);
+		panelButtons.setAlignmentX(BoxLayout.X_AXIS);
+		panelControls.add(panelButtons);
+		panelControls.add(sliderProgress);
+		panelControls.add(labelProgress);
+		panelControls.add(Box.createVerticalStrut(5));
+
+		add(panelControls);
 	}
 
 	private void initSongListSection()
 	{
-		// Add song list subtitle
 		JLabel subtitleSongList = new JLabel("Song List:");
 		subtitleSongList.setForeground(COLOR_SUBTITLE);
 		subtitleSongList.setAlignmentX(Component.LEFT_ALIGNMENT);
-		this.add(subtitleSongList);
-		this.add(Box.createVerticalStrut(5));
+		add(subtitleSongList);
+		add(Box.createVerticalStrut(5));
 
-		// Create panel to display songs
-		tableSongs = new CustomTable();
+		tableSongs.setAlignmentX(BoxLayout.X_AXIS);
 		tableSongs.setBackground(ColorScheme.DARKER_GRAY_COLOR);
 		tableSongs.setTableHeader(null);
 		tableSongs.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		tableSongs.setDefaultRenderer(String.class, new CustomTableStringCellRenderer());
 		tableSongs.setDefaultRenderer(Boolean.class, new CustomTableBoolCellRenderer());
+		InputMap im = tableSongs.getInputMap(CustomTable.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+		im.put(KeyStroke.getKeyStroke("DOWN"), "none");
+		im.put(KeyStroke.getKeyStroke("UP"), "none");
+		im.put(KeyStroke.getKeyStroke("LEFT"), "none");
+		im.put(KeyStroke.getKeyStroke("RIGHT"), "none");
 
 		tableSongs.addMouseListener(new MouseAdapter()
 		{
-			@Override
-			public void mouseClicked(MouseEvent e)
+			private void select(int row, int col)
 			{
-				int rowSelected = tableSongs.rowAtPoint(e.getPoint());
-				int colSelected = tableSongs.columnAtPoint(e.getPoint());
-
-				if (colSelected == 0)
+				if (col == 0)
 				{
-					String songId = tableSongs.getSongIdFromRow(rowSelected);
+					String songId = tableSongs.getSongIdFromRow(row);
 					if (selectedPlaylist.hasCurrentSongId() && selectedPlaylist.getCurrentSongId().equals(songId))
 					{
 						selectedPlaylist.setCurrentSongId(songId);
@@ -352,16 +417,24 @@ class MusicPlayerPluginPanel extends PluginPanel
 				}
 				else
 				{
-					boolean value = (Boolean) tableSongs.getValueAt(rowSelected, 1);
-					tableSongs.setValueAt(!value, rowSelected, 1);
+					boolean value = (Boolean) tableSongs.getValueAt(row, 1);
+					tableSongs.setValueAt(!value, row, 1);
 				}
+			}
+
+			@Override
+			public void mouseReleased(MouseEvent e)
+			{
+				int rowSelected = tableSongs.rowAtPoint(e.getPoint());
+				int colSelected = tableSongs.columnAtPoint(e.getPoint());
+				select(rowSelected, colSelected);
 			}
 		});
 
-		// Create scroll pane for panelSongs
 		JScrollPane scrollPane = new JScrollPane(tableSongs);
+		scrollPane.setAlignmentX(BoxLayout.X_AXIS);
 		scrollPane.setPreferredSize(new Dimension(PluginPanel.PANEL_WIDTH, 250));
-		this.add(scrollPane);
+		add(scrollPane);
 	}
 
 	private void initPlaylistSection()
@@ -374,30 +447,25 @@ class MusicPlayerPluginPanel extends PluginPanel
 		add(Box.createVerticalStrut(5));
 
 		// Create playlist panel
-		playlistPanel = new JPanel();
-		BoxLayout boxLayout = new BoxLayout(playlistPanel, BoxLayout.PAGE_AXIS);
-		playlistPanel.setLayout(boxLayout);
-		add(playlistPanel);
+		panelPlaylists.setAlignmentX(BoxLayout.X_AXIS);
+		BoxLayout boxLayout = new BoxLayout(panelPlaylists, BoxLayout.PAGE_AXIS);
+		panelPlaylists.setLayout(boxLayout);
+		add(panelPlaylists);
 
 		// Add default playlists
 		Playlist playlistAllSongs = new Playlist("All Songs", MusicPlayerPlugin.musicNameIndex.keySet());
+		playlists.add(0, playlistAllSongs);
 		PlaylistPanel allSongsPanel = new PlaylistPanel(this, playlistAllSongs);
 		allSongsPanel.remove(allSongsPanel.getButton());
-
-		playlists.add(0, playlistAllSongs);
-
 		addPlaylistPanel(allSongsPanel);
+		setPlaylistPanelSelected(allSongsPanel);
+		loadNextSong();
 
-		setSelectedPlaylistPanel(allSongsPanel);
-
-		// Load user playlists
 		for (Playlist playlist : this.plugin.getSavedPlaylists())
 		{
 			addPlaylistPanel(new PlaylistPanel(this, playlist));
 		}
 
-		// Add playlist options
-		addPlaylistPanel = new MusicPlayerPanel(ImageManager.getImage(ImageManager.Images.PLUS_IMG), "Create New Playlist");
 		addPlaylistPanel.getButton().addMouseListener(new MouseAdapter()
 		{
 			@Override
@@ -413,7 +481,7 @@ class MusicPlayerPluginPanel extends PluginPanel
 		});
 		add(addPlaylistPanel);
 		add(Box.createVerticalStrut(5));
-		deletePlaylistPanel = new MusicPlayerPanel(ImageManager.getImage(ImageManager.Images.MINUS_IMG), "Delete Playlist");
+
 		deletePlaylistPanel.getButton().addMouseListener(new MouseAdapter()
 		{
 			@Override
@@ -461,17 +529,17 @@ class MusicPlayerPluginPanel extends PluginPanel
 		this.playlists.add(playlist);
 		addPlaylistPanel(pItem);
 
-		setSelectedPlaylistPanel(pItem);
+		setPlaylistPanelSelected(pItem);
 		enterEditMode();
 	}
 
 	private void addPlaylistPanel(PlaylistPanel pPanel)
 	{
-		playlistPanel.add(pPanel);
-		playlistPanel.add(pPanel.spacer);
+		panelPlaylists.add(pPanel);
+		panelPlaylists.add(pPanel.spacer);
 		playlistPanels.add(pPanel);
-		playlistPanel.revalidate();
-		playlistPanel.repaint();
+		panelPlaylists.revalidate();
+		panelPlaylists.repaint();
 	}
 
 	private void deleteSelectedPlaylist()
@@ -487,17 +555,12 @@ class MusicPlayerPluginPanel extends PluginPanel
 				this.plugin.getSavedPlaylists().remove(selectedPlaylist);
 				this.plugin.updateConfig();
 				playlists.remove(selectedPlaylist);
-				playlistPanel.remove(selectedPlaylistPanel);
-				playlistPanel.remove(selectedPlaylistPanel.spacer);
-				playlistPanels.remove(selectedPlaylistPanel);
-				setSelectedPlaylistPanel(playlistPanels.get(0));
+				panelPlaylists.remove(playlistPanelSelected);
+				panelPlaylists.remove(playlistPanelSelected.spacer);
+				playlistPanels.remove(playlistPanelSelected);
+				setPlaylistPanelSelected(playlistPanels.get(0));
 			}
 		}
-	}
-
-	private void reloadSong()
-	{
-		changeSong(selectedPlaylist.getCurrentSongId());
 	}
 
 	private void loadNextSong()
@@ -533,7 +596,18 @@ class MusicPlayerPluginPanel extends PluginPanel
 		int rowInTable = tableSongs.getRowFromSongId(songId);
 		SwingUtilities.invokeLater(() -> tableSongs.setRowSelectionInterval(rowInTable, rowInTable));
 		subtitlePlaying.setText(String.format(PLAY_FORMAT, PLAY_PRE, MusicPlayerPlugin.musicNameIndex.get(songId)));
-		this.musicPlayer.load(indexToFilePath(songId));
+		musicPlayer.load(indexToFilePath(songId));
+		sliderProgress.setValue(0);
+		updateProgressLabel();
+	}
+
+	private void updateProgressLabel()
+	{
+		double percentProgress = (double) sliderProgress.getValue() / (double) sliderProgress.getMaximum();
+		SimpleDateFormat df = new SimpleDateFormat("mm:ss");
+		long msMaximum = musicPlayer.getMicrosecondLength() / 1000;
+		long msProgress = (long) (msMaximum * percentProgress);
+		labelProgress.setText(String.format("%s / %s", df.format(msProgress), df.format(msMaximum)));
 	}
 
 	private String indexToFilePath(String index)
@@ -541,35 +615,30 @@ class MusicPlayerPluginPanel extends PluginPanel
 		return "music/" + index + " - " + MusicPlayerPlugin.musicNameIndex.get(index) + ".mid";
 	}
 
-	void setSelectedPlaylistPanel(PlaylistPanel panel)
+	void setPlaylistPanelSelected(PlaylistPanel panel)
 	{
 		panel.setSelected(true);
 		Playlist panelPlaylist = panel.getPlaylist();
 		if (selectedPlaylist == null || !panelPlaylist.title.equals(selectedPlaylist.title))
 		{
-			if (selectedPlaylistPanel != null)
+			if (playlistPanelSelected != null)
 			{
-				selectedPlaylistPanel.setSelected(false);
+				playlistPanelSelected.setSelected(false);
 			}
 			selectedPlaylist = panelPlaylist;
-			selectedPlaylistPanel = panel;
+			playlistPanelSelected = panel;
 			tableSongs.setModel(CustomTableModel.getCustomTableModel(panelPlaylist));
-			buttonPausePlay.setIcon(ImageManager.getIcon(ImageManager.Images.PLAY_IMG));
-			musicPlayer.pause();
-			if (panelPlaylist.hasCurrentSongId())
-			{
-				reloadSong();
-			}
-			else
-			{
-				loadNextSong();
-			}
+		}
+
+		if (shuffle)
+		{
+			selectedPlaylist.shufflePlaylist();
 		}
 	}
 
 	void enterEditMode()
 	{
-		selectedPlaylistPanel.setEditMode(true);
+		playlistPanelSelected.setEditMode(true);
 		for (PlaylistPanel pItem : playlistPanels)
 		{
 			if (!pItem.getPlaylist().title.equals(selectedPlaylist.title))
@@ -586,7 +655,7 @@ class MusicPlayerPluginPanel extends PluginPanel
 
 	void exitEditMode()
 	{
-		selectedPlaylistPanel.setEditMode(false);
+		playlistPanelSelected.setEditMode(false);
 		Set<String> songIds = new HashSet<>();
 		for (int i = 0; i < tableSongs.getRowCount(); i++)
 		{

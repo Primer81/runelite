@@ -2,27 +2,18 @@ package net.runelite.client.plugins.musicplayer;
 
 import lombok.Getter;
 import net.runelite.client.ui.ColorScheme;
-import net.runelite.client.util.ImageUtil;
-import javax.swing.ImageIcon;
 import javax.swing.border.Border;
 import javax.swing.border.MatteBorder;
 import java.awt.Color;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.image.BufferedImage;
 
 class PlaylistPanel extends MusicPlayerPanel
 {
 	@Getter
-	private Playlist playlist;
+	private final Playlist playlist;
 
 	private final Border selectedBorder = new MatteBorder(1, 5, 1, 1, ColorScheme.BRAND_ORANGE);
-
-	private ImageIcon iconConfig;
-	private ImageIcon iconConfigHover;
-	private ImageIcon iconDone;
-	private ImageIcon iconDoneHover;
-
 	private boolean selected;
 	private boolean editMode;
 
@@ -33,19 +24,8 @@ class PlaylistPanel extends MusicPlayerPanel
 		this.playlist = playlist;
 		selected = false;
 		editMode = false;
-
 		setToolTipText(playlist.title);
-
-		BufferedImage imageConfig = ImageUtil.getResourceStreamFromClass(PlaylistPanel.class, "config.png");
-		iconConfig = new ImageIcon(imageConfig);
-		iconConfigHover = new ImageIcon(ImageUtil.grayscaleImage(imageConfig));
-
-		BufferedImage imageDone = ImageUtil.getResourceStreamFromClass(PlaylistPanel.class, "done.png");
-		iconDone = new ImageIcon(imageDone);
-		iconDoneHover = new ImageIcon(ImageUtil.grayscaleImage(imageDone));
-
-		button.setIcon(iconConfig);
-
+		button.setIcon(ImageManager.getIcon(Images.CONFIG_IMG));
 		button.addMouseListener(new MouseAdapter()
 		{
 			@Override
@@ -76,11 +56,11 @@ class PlaylistPanel extends MusicPlayerPanel
 
 				if (editMode)
 				{
-					button.setIcon(iconDoneHover);
+					button.setIcon(ImageManager.getIcon(Images.DONE_IMG, true));
 				}
 				else
 				{
-					button.setIcon(iconConfigHover);
+					button.setIcon(ImageManager.getIcon(Images.CONFIG_IMG, true));
 				}
 			}
 
@@ -94,11 +74,11 @@ class PlaylistPanel extends MusicPlayerPanel
 
 				if (editMode)
 				{
-					button.setIcon(iconDone);
+					button.setIcon(ImageManager.getIcon(Images.DONE_IMG));
 				}
 				else
 				{
-					button.setIcon(iconConfig);
+					button.setIcon(ImageManager.getIcon(Images.CONFIG_IMG));
 				}
 			}
 		});
@@ -124,7 +104,7 @@ class PlaylistPanel extends MusicPlayerPanel
 				{
 					return;
 				}
-				parent.setSelectedPlaylistPanel((PlaylistPanel) e.getSource());
+				parent.setPlaylistPanelSelected((PlaylistPanel) e.getSource());
 			}
 		});
 	}
@@ -140,9 +120,9 @@ class PlaylistPanel extends MusicPlayerPanel
 		}
 		else
 		{
-			this.label.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
-			this.setBorder(defaultBorder);
-			this.button.setEnabled(false);
+			setBorder(defaultBorder);
+			label.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
+			button.setEnabled(false);
 		}
 	}
 
@@ -151,11 +131,11 @@ class PlaylistPanel extends MusicPlayerPanel
 		this.editMode = editMode;
 		if (editMode)
 		{
-			button.setIcon(iconDoneHover);
+			button.setIcon(ImageManager.getIcon(Images.DONE_IMG, true));
 		}
 		else
 		{
-			button.setIcon(iconConfigHover);
+			button.setIcon(ImageManager.getIcon(Images.CONFIG_IMG, true));
 		}
 	}
 
