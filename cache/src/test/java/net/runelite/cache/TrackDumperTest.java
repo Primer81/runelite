@@ -83,7 +83,7 @@ public class TrackDumperTest
 			}
 		}
 
-		logger.info("Dumped {} sound music ({} idx1, {} idx2) to {} and {}", idx1 + idx2, idx1, idx2, dumpDir1, dumpDir2);
+		logger.info("Dumped {} sound tracks ({} idx1, {} idx2) to {} and {}", idx1 + idx2, idx1, idx2, dumpDir1, dumpDir2);
 	}
 
 	private void dumpTrackArchive(File dumpDir, Storage storage, Archive archive) throws IOException
