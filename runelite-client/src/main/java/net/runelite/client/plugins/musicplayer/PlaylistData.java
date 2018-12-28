@@ -12,5 +12,5 @@ import java.util.Set;
 class PlaylistData
 {
 	String title;
-	Set<String> songs;
+	Set<String> songIds;
 }

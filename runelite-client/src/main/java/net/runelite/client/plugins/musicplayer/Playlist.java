@@ -17,7 +17,7 @@ class Playlist
 
 	private final int MAX_BACK = 100;
 
-	private Set<String> songs;
+	private Set<String> songIds;
 
 	private Deque<String> songQueue;
 	private Deque<String> songsPlayed;
@@ -29,20 +29,20 @@ class Playlist
 		super();
 		this.playlistData = playlistData;
 		this.title = playlistData.title;
-		this.songs = playlistData.songs;
+		this.songIds = playlistData.songIds;
 		this.songQueue = new ArrayDeque<>();
 		this.songsPlayed = new ArrayDeque<>();
 	}
 
-	Playlist(String title, Set<String> songs)
+	Playlist(String title, Set<String> songIds)
 	{
-		this(new PlaylistData(title, songs));
+		this(new PlaylistData(title, songIds));
 	}
 
 	void updatePlaylist(Set<String> songs)
 	{
-		this.playlistData.songs = songs;
-		this.songs = songs;
+		this.playlistData.songIds = songs;
+		this.songIds = songs;
 	}
 
 	void shufflePlaylist()
@@ -51,7 +51,7 @@ class Playlist
 		shuffledList = new ArrayList<>();
 		for (String songId : MusicPlayerPlugin.songsOrderedAlpha)
 		{
-			if (songs.contains(songId))
+			if (songIds.contains(songId))
 			{
 				shuffledList.add(rand.nextInt(shuffledList.size() + 1), songId);
 			}
@@ -72,7 +72,7 @@ class Playlist
 			songQueue = new ArrayDeque<>();
 			for (String key : MusicPlayerPlugin.songsOrderedAlpha)
 			{
-				if (songs.contains(key))
+				if (songIds.contains(key))
 				{
 					songQueue.addFirst(key);
 				}
@@ -90,7 +90,7 @@ class Playlist
 
 	void setCurrentSongId(String songId)
 	{
-		if (!songs.contains(songId))
+		if (!songIds.contains(songId))
 		{
 			return;
 		}
@@ -104,7 +104,7 @@ class Playlist
 
 	private String skipNextSongId()
 	{
-		if (this.songs.isEmpty() || this.songQueue.isEmpty())
+		if (this.songIds.isEmpty() || this.songQueue.isEmpty())
 		{
 			return "";
 		}
@@ -163,12 +163,12 @@ class Playlist
 
 	boolean contains(String songId)
 	{
-		return this.songs.contains(songId);
+		return this.songIds.contains(songId);
 	}
 
 	boolean isEmpty()
 	{
-		return songs.isEmpty();
+		return songIds.isEmpty();
 	}
 
 	@Override
