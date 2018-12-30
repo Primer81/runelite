@@ -40,7 +40,7 @@ class MusicPlayerPluginPanel extends PluginPanel
 
 	// Package classes
 	private final MusicPlayerPlugin plugin;
-	private final MusicPlayer musicPlayer = new MusicPlayer();
+	private final MusicPlayer musicPlayer;
 	private final List<Playlist> playlists = new ArrayList<>();
 	private Playlist selectedPlaylist;
 
@@ -64,10 +64,11 @@ class MusicPlayerPluginPanel extends PluginPanel
 	private boolean shuffle;
 	private boolean loop;
 
-	MusicPlayerPluginPanel(MusicPlayerPlugin plugin)
+	MusicPlayerPluginPanel(MusicPlayerPlugin plugin, MusicPlayer musicPlayer)
 	{
 		super();
 		this.plugin = plugin;
+		this.musicPlayer = musicPlayer;
 		musicPlayer.addMetaEventListener(meta ->
 			{
 				if (meta.getType() == 0x2F)  // End of track
