@@ -1,11 +1,10 @@
 package net.runelite.client.plugins.musicplayer;
 
-import lombok.Getter;
-
-import javax.swing.JTable;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
+import javax.swing.JTable;
+import lombok.Getter;
 
 class CustomTable extends JTable
 {
@@ -45,13 +44,13 @@ class CustomTable extends JTable
 
 	int getRowFromSongId(String songId)
 	{
-		CustomTableModel model = (CustomTableModel)getModel();
+		CustomTableModel model = (CustomTableModel) getModel();
 		return model.getMusicRowIndex().get(songId);
 	}
 
 	String getSongIdFromRow(int row)
 	{
-		CustomTableModel model = (CustomTableModel)getModel();
+		CustomTableModel model = (CustomTableModel) getModel();
 		return model.getRowMusicIndex().get(row);
 	}
 }

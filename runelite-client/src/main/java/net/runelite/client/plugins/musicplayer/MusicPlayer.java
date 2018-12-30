@@ -14,8 +14,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import javax.annotation.Nullable;
 import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MetaEventListener;
+import javax.sound.midi.MidiChannel;
 import javax.sound.midi.MidiSystem;
 import javax.sound.midi.MidiUnavailableException;
 import javax.sound.midi.Sequence;
@@ -25,42 +27,32 @@ import javax.sound.midi.Transmitter;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Mixer;
 import javax.swing.Timer;
+import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 class MusicPlayer
 {
 	private static final Logger logger = LoggerFactory.getLogger(MusicPlayer.class);
-	private final Timer timerTick;
 	private final List<ActionListener> tickListeners = new ArrayList<>();
 	private final List<MetaEventListener> metaEventListeners = new ArrayList<>();
+	private Timer timerTick;
+	private Thread refreshThread;
 	private Sequencer sequencer;
 	private Synthesizer synthesizer;
+
+	@Nullable
 	private Mixer activeAudioDevice;
+
+	@Getter
+	private int volume;
 
 	MusicPlayer()
 	{
-		init();
-		timerTick = new Timer(100, e -> tick());
-		Thread refreshThread = new Thread(() ->
-		{
-			while (true)
-			{
-				refreshAudioDevice();
-				try
-				{
-					Thread.sleep(1000);
-				}
-				catch (InterruptedException e)
-				{
-					logger.debug("refresh thread sleep interrupted");
-				}
-			}
-		});
-		refreshThread.start();
+		startUp();
 	}
 
-	private void init()
+	private void startUp()
 	{
 		Mixer.Info[] audioDevices = AudioSystem.getMixerInfo();
 		try
@@ -76,7 +68,7 @@ class MusicPlayer
 		}
 		catch (MidiUnavailableException e)
 		{
-			logger.debug("midi system unavailable");
+			logger.debug("midi devices unavailable");
 			return;
 		}
 
@@ -116,6 +108,39 @@ class MusicPlayer
 		else
 		{
 			activeAudioDevice = null;
+		}
+
+		timerTick = new Timer(100, e -> tick());
+		refreshThread = new Thread(() ->
+		{
+			while (true)
+			{
+				refreshAudioDevice();
+				try
+				{
+					Thread.sleep(1000);
+				}
+				catch (InterruptedException e)
+				{
+					return;
+				}
+			}
+		});
+		refreshThread.start();
+	}
+
+	void shutDown()
+	{
+		timerTick.stop();
+		refreshThread.interrupt();
+		sequencer.stop();
+		if (timeoutRunnable(() -> synthesizer.close(), Duration.ofMillis(300)))  // hangs occasionally
+		{
+			logger.debug("synthesizer.close() timed out");
+		}
+		if (timeoutRunnable(() -> sequencer.close(), Duration.ofMillis(300)))
+		{
+			logger.debug("sequencer.close() timed out");
 		}
 	}
 
@@ -158,7 +183,7 @@ class MusicPlayer
 
 		if (isNull || !synthesizer.isOpen() || !sequencer.isOpen())
 		{
-			init();
+			startUp();
 			if (isNull)
 			{
 				return;
@@ -203,6 +228,12 @@ class MusicPlayer
 		tickListeners.add(actionListener);
 	}
 
+	void addMetaEventListener(MetaEventListener metaEventListener)
+	{
+		metaEventListeners.add(metaEventListener);
+		sequencer.addMetaEventListener(metaEventListener);
+	}
+
 	long getMicrosecondPosition()
 	{
 		return sequencer.getMicrosecondPosition();
@@ -213,10 +244,15 @@ class MusicPlayer
 		return sequencer.getMicrosecondLength();
 	}
 
-	void addMetaEventListener(MetaEventListener metaEventListener)
+	void setVolume(int volume)
 	{
-		metaEventListeners.add(metaEventListener);
-		sequencer.addMetaEventListener(metaEventListener);
+		this.volume = volume > 100 ? 100 : volume < 0 ? 0 : volume;
+		double gain = this.volume / 100.0;
+		MidiChannel[] channels = synthesizer.getChannels();
+		for (MidiChannel channel : channels)
+		{
+			channel.controlChange(7, (int) (gain * 127.0));
+		}
 	}
 
 	private void tick()
@@ -257,16 +293,8 @@ class MusicPlayer
 				long position = sequencer.getTickPosition();
 				Sequence sequence = sequencer.getSequence();
 				boolean wasRunning = sequencer.isRunning();
-				pause();
-				if (timeoutRunnable(() -> synthesizer.close(), Duration.ofMillis(300)))  // hangs occasionally
-				{
-					logger.debug("synthesizer.close() timed out");
-				}
-				if (timeoutRunnable(() -> sequencer.close(), Duration.ofMillis(100)))
-				{
-					logger.debug("sequencer.close() timed out");
-				}
-				init();
+				shutDown();
+				startUp();
 				try
 				{
 					sequencer.setSequence(sequence);

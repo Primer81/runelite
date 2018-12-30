@@ -17,7 +17,7 @@ class PlaylistPanel extends MusicPlayerPanel
 	private boolean selected;
 	private boolean editMode;
 
-	PlaylistPanel(MusicPlayerPluginPanel parent, Playlist playlist)
+	PlaylistPanel(MusicPlayerPlugin plugin, Playlist playlist)
 	{
 		super(null, playlist.title);
 		this.setSelected(false);
@@ -38,11 +38,11 @@ class PlaylistPanel extends MusicPlayerPanel
 
 				if (!editMode)
 				{
-					parent.enterEditMode();
+					plugin.enterEditMode();
 				}
 				else
 				{
-					parent.exitEditMode();
+					plugin.exitEditMode();
 				}
 			}
 
@@ -104,7 +104,7 @@ class PlaylistPanel extends MusicPlayerPanel
 				{
 					return;
 				}
-				parent.setPlaylistPanelSelected((PlaylistPanel) e.getSource());
+				plugin.changeSelectedPlaylistPanel((PlaylistPanel) e.getSource());
 			}
 		});
 	}

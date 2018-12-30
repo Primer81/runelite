@@ -111,7 +111,6 @@ public class TrackDumperTest
 		{
 			name = "archive-" + archive.getArchiveId();
 		}
-
 		File dest = new File(dumpDir, name + ".midi");
 		assert !dest.exists();
 
